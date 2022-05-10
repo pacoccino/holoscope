@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import AbstractScene from './AbstractScene'
+import AbstractScene, { Size } from './AbstractScene'
 // const fov = 45
 // const aspect = 2 // the canvas default
 // const near = 0.1
@@ -10,6 +10,8 @@ const defaultModelUrl = 'assets/3d/woodpecker/scene.gltf'
 
 class ThreeScene implements AbstractScene {
   source: HTMLCanvasElement
+  size: Size
+
   camera: THREE.PerspectiveCamera
   renderer: THREE.Renderer
   objects: Record<string, THREE.Object3D>
@@ -30,8 +32,13 @@ class ThreeScene implements AbstractScene {
     )
     this.camera.position.z = 1
 
+    this.size = {
+      width: 800,
+      height: 500,
+      aspect: 800 / 500,
+    }
     this.renderer = new THREE.WebGLRenderer({ antialias: true })
-    this.renderer.setSize(500, 500)
+    this.renderer.setSize(this.size.width, this.size.height)
 
     this.objects = {}
 

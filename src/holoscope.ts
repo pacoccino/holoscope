@@ -33,6 +33,7 @@ class HoloscopeDisplay {
   views: any[]
   scene: AbstractScene
   aspectRatio: number
+  maxHeight: number
   startTimestamp: number
   lastTimestamp: number
 
@@ -69,7 +70,7 @@ class HoloscopeDisplay {
 
       const view: View = {
         id: viewParam.id,
-        isHorizontal: isHorizontal,
+        isHorizontal,
         container: document.getElementById(viewParam.id),
         width: isHorizontal ? screenWidth : screenHeight,
         height: isHorizontal
@@ -91,6 +92,8 @@ class HoloscopeDisplay {
         view.canvas.style.clipPath = `polygon(0% 0%, 100% 0%, ${
           50 + cpw
         }% 100%, ${50 - cpw}% 100%, 0% 0%)`
+
+        this.maxHeight = view.height
       } else {
         view.container.style.width = view.height + 'px'
         view.container.style.height = view.width + 'px'
@@ -138,14 +141,12 @@ class HoloscopeDisplay {
     this.views.forEach((view) => {
       const ctx = view.canvas.getContext('2d')
 
-      const dWidth = view.width * config.scaleWidth
-      const dHeight =
-        (view.height * config.scaleHeight) /
-        (view.isHorizontal ? 1 : this.aspectRatio)
+      const dHeight = this.maxHeight * config.scaleHeight
+      const offsetBottom =
+        (this.maxHeight * Math.max(1 - config.scaleHeight, 0)) / 2
+      const dy = view.height - dHeight - offsetBottom
+      const dWidth = dHeight * this.scene.size.aspect
       const dx = (view.width - dWidth) / 2
-      const dy = (view.height - dHeight) / 2
-
-      // todo keep video aspect ratio
 
       ctx.drawImage(this.scene.source, dx, dy, dWidth, dHeight)
     })

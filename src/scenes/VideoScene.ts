@@ -1,15 +1,11 @@
-import AbstractScene from './AbstractScene'
+import AbstractScene, { Size } from './AbstractScene'
 
 const defaultVideoUrl = 'assets/videos/ColorOrb_1.mp4'
-
-interface Size {
-  width: number
-  height: number
-}
 
 class VideoScene implements AbstractScene {
   size: Size
   source: HTMLVideoElement
+
   videoUrl: string
 
   constructor(videoUrl = defaultVideoUrl) {
@@ -27,14 +23,19 @@ class VideoScene implements AbstractScene {
         this.size = {
           width: video.videoWidth,
           height: video.videoHeight,
+          aspect: video.videoWidth / video.videoHeight,
         }
         this.source = video
-        video.play()
         resolve()
       })
     })
   }
-  async animate() {}
+
+  async animate() {
+    if (this.source.paused) {
+      await this.source.play()
+    }
+  }
 }
 
 export default VideoScene

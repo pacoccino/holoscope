@@ -10,7 +10,7 @@ async function App() {
   let scene: AbstractScene
   switch (path) {
     case '/video':
-      scene = new VideoScene()
+      scene = new VideoScene('assets/videos/ss.m4v')
       break
     case '/3d':
     default:

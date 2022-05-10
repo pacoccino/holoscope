@@ -3,8 +3,7 @@ const config = {
   squareHeight: 300,
   contrast: 130,
   brightness: 1.2,
-  scaleWidth: 0.5,
-  scaleHeight: 0.9,
+  scaleHeight: 0.99, // 0-1: reduce and have border in the middle, 1-2 scale to fit screen width
 }
 
 export default config
