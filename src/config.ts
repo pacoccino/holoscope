@@ -7,4 +7,4 @@ const config = {
   scaleHeight: 1,
 }
 
- export default config
+export default config

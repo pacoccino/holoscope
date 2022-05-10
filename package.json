@@ -11,7 +11,8 @@
     "three": "0.114.0"
   },
   "devDependencies": {
-    "parcel": "^2.5.0"
+    "parcel": "^2.5.0",
+    "prettier": "2.6.2"
   },
   "keywords": [
     "javascript",
