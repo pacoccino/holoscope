@@ -1,36 +1,26 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import AbstractScene from './AbstractScene'
+// const fov = 45
+// const aspect = 2 // the canvas default
+// const near = 0.1
+// const far = 100
 
-import 'normalize.css'
-import './styles.css'
+const defaultModelUrl = 'assets/3d/woodpecker/scene.gltf'
 
-const fov = 45
-const aspect = 2 // the canvas default
-const near = 0.1
-const far = 100
+class ThreeScene implements AbstractScene {
+  source: HTMLCanvasElement
+  camera: THREE.PerspectiveCamera
+  renderer: THREE.Renderer
+  objects: Record<string, THREE.Object3D>
+  threeScene: THREE.Scene
+  modelUrl: string
 
-const views = {
-  'fc-1': {
-    position: 'top',
-  },
-  'fc-2': {
-    position: 'right',
-  },
-  'fc-3': {
-    position: 'bottom',
-  },
-  'fc-4': {
-    position: 'left',
-  },
-}
+  constructor(modelUrl = defaultModelUrl) {
+    this.modelUrl = modelUrl
+  }
 
-const displaySettings = {
-  squareWidth: 200,
-  squareHeight: 200,
-}
-
-class Engine {
-  constructor() {
+  async prepare() {
     this.camera = new THREE.PerspectiveCamera(
       70,
       window.innerWidth / window.innerHeight,
@@ -39,72 +29,36 @@ class Engine {
     )
     this.camera.position.z = 1
 
-    const root = document.getElementById('root')
-    const screenWidth = root.clientWidth
-    const screenHeight = root.clientHeight
-
-    const center = document.getElementById('center')
-    center.style.width = displaySettings.squareWidth + 'px'
-    center.style.height = displaySettings.squareHeight + 'px'
-
-    this.renderers = Object.keys(views)
-      .slice(0, 4)
-      .map((viewKey, viewIndex) => {
-        const view = views[viewKey]
-
-        const isHorizontal = viewIndex % 1 === 0
-        const faceContainer = document.getElementById(viewKey)
-
-        let faceWidth, faceHeight
-        if (isHorizontal) {
-          faceWidth = screenWidth
-          faceHeight = (screenHeight - displaySettings.squareHeight) / 2
-        } else {
-          faceWidth = screenHeight
-          faceHeight = (screenWidth - displaySettings.squareWidth) / 2
-        }
-
-        faceContainer.style[view.position] = '0px'
-        //faceContainer.style.width = faceWidth + 'px';
-        //faceContainer.style.height = faceHeight + 'px';
-        //faceContainer.style.transform = 'rotate(' + viewIndex * 90 + 'deg)'
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true })
-        renderer.setSize(faceWidth, faceHeight)
-
-        faceContainer.appendChild(renderer.domElement)
-        return renderer
-      })
+    this.renderer = new THREE.WebGLRenderer({ antialias: true })
+    this.renderer.setSize(500, 500)
 
     this.objects = {}
+
+    this.source = this.renderer.domElement
 
     this.createScene()
   }
 
-  animate() {
-    requestAnimationFrame(this.animate.bind(this))
-
+  async animate() {
     this.objects['cube'].rotation.x += 0.01
     this.objects['cube'].rotation.y += 0.02
 
     this.objects['car'] && (this.objects['car'].rotation.y += 0.01)
     //this.objects['car'].rotation.y = 1.7;
 
-    this.renderers.forEach((renderer) =>
-      renderer.render(this.scene, this.camera)
-    )
+    this.renderer.render(this.threeScene, this.camera)
   }
 
   createScene() {
-    this.scene = new THREE.Scene()
-    this.scene.background = new THREE.Color('black')
+    this.threeScene = new THREE.Scene()
+    this.threeScene.background = new THREE.Color('black')
 
     {
       const skyColor = 0xb1e1ff // light blue
       const groundColor = 0xb97a20 // brownish orange
       const intensity = 1
       const light = new THREE.HemisphereLight(skyColor, groundColor, intensity)
-      this.scene.add(light)
+      this.threeScene.add(light)
     }
 
     {
@@ -112,23 +66,23 @@ class Engine {
       const intensity = 2
       const light = new THREE.DirectionalLight(color, intensity)
       light.position.set(-10, 5, 4)
-      this.scene.add(light)
-      this.scene.add(light.target)
+      this.threeScene.add(light)
+      this.threeScene.add(light.target)
     }
 
     {
       const loader = new GLTFLoader()
       loader.load(
-        'assets/woodpecker_non-commercial/scene.gltf',
+        this.modelUrl,
         (gltf) => {
           const root = gltf.scene
           this.objects['car'] = root
-          this.scene.add(this.objects['car'])
+          this.threeScene.add(this.objects['car'])
 
           const box = new THREE.Box3().setFromObject(root)
           const boxSize = box.getSize(new THREE.Vector3()).length()
           const boxCenter = box.getCenter(new THREE.Vector3())
-          this.frameArea(boxSize * 1, boxSize, boxCenter, this.camera)
+          this.frameArea(boxSize * 1, boxSize, boxCenter)
         },
         undefined,
         console.error
@@ -140,7 +94,7 @@ class Engine {
       const material = new THREE.MeshNormalMaterial()
 
       this.objects['cube'] = new THREE.Mesh(geometry, material)
-      this.scene.add(this.objects['cube'])
+      this.threeScene.add(this.objects['cube'])
     }
   }
 
@@ -171,4 +125,4 @@ class Engine {
   }
 }
 
-new Engine().animate()
+export default ThreeScene

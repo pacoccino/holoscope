@@ -1,20 +1,25 @@
-const videoUrl = new URL('../../assets/videos/ColorOrb_1.mp4', import.meta.url)
+import AbstractScene from './AbstractScene'
+
+const defaultVideoUrl = 'assets/videos/ColorOrb_1.mp4'
 
 interface Size {
   width: number
   height: number
 }
 
-export class Scene {
+class VideoScene implements AbstractScene {
   size: Size
-  source: any
+  source: HTMLVideoElement
+  videoUrl: string
 
-  constructor() {}
+  constructor(videoUrl = defaultVideoUrl) {
+    this.videoUrl = videoUrl
+  }
 
   async prepare() {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       const video = document.createElement('video')
-      video.src = videoUrl
+      video.src = this.videoUrl
       video.muted = true
       video.loop = true
 
@@ -29,4 +34,7 @@ export class Scene {
       })
     })
   }
+  async animate() {}
 }
+
+export default VideoScene
