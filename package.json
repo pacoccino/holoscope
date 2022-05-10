@@ -9,7 +9,7 @@
   "dependencies": {
     "dat.gui": "^0.7.9",
     "normalize.css": "^8.0.1",
-    "three": "0.114.0"
+    "three": "0.125.0"
   },
   "devDependencies": {
     "parcel": "^2.5.0",
