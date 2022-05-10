@@ -5,22 +5,22 @@ import AbstractScene from './scenes/AbstractScene'
 import VideoScene from './scenes/VideoScene'
 import ThreeScene from './scenes/ThreeScene'
 
+const ScenesParams = {
+  orb: [VideoScene, 'assets/videos/orb.mp4'],
+  woodpecker: [ThreeScene, 'assets/3d/woodpecker/scene.gltf'],
+}
 async function App() {
-  let scene: AbstractScene
+  const defaultSceneParams = ScenesParams[Object.keys(ScenesParams)[0]]
+  const sceneId = window.location.hash.replace('#', '')
+  const sceneParams = ScenesParams[sceneId] || defaultSceneParams
 
-  const path = window.location.pathname
-  switch (path) {
-    case '/video':
-      scene = new VideoScene('assets/videos/orb.mp4')
-      break
-    case '/3d':
-    default:
-      scene = new ThreeScene('assets/3d/woodpecker/scene.gltf')
-  }
+  const scene: AbstractScene = new sceneParams[0](sceneParams[1])
 
   const holoscope = new HoloscopeDisplay(scene)
   await holoscope.prepare()
   await holoscope.start()
+
+  window.addEventListener('hashchange', (e) => window.location.reload())
 }
 
 App().catch(console.error)
