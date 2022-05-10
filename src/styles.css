@@ -63,3 +63,9 @@ body {
   box-sizing: border-box;
   background-color: #000000;
 }
+
+.selector {
+  position: absolute;
+  top: 0;
+  color: white;
+}
