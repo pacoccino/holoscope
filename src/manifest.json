@@ -1,0 +1,22 @@
+{
+  "short_name": "Holoscope",
+  "name": "Holoscope: Hologram visualisation",
+  "icons": [
+    {
+      "src": "../static/icon-192.jpg",
+      "type": "image/jpg",
+      "sizes": "192x192"
+    },
+    {
+      "src": "../static/icon-512.jpg",
+      "type": "image/jpg",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#000",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#000",
+  "description": "Visualize holograms in your browser !"
+}
