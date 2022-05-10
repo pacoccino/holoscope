@@ -6,15 +6,16 @@ import VideoScene from './scenes/VideoScene'
 import ThreeScene from './scenes/ThreeScene'
 
 async function App() {
-  const path = window.location.pathname
   let scene: AbstractScene
+
+  const path = window.location.pathname
   switch (path) {
     case '/video':
-      scene = new VideoScene('assets/videos/ss.m4v')
+      scene = new VideoScene('assets/videos/orb.mp4')
       break
     case '/3d':
     default:
-      scene = new ThreeScene()
+      scene = new ThreeScene('assets/3d/woodpecker/scene.gltf')
   }
 
   const holoscope = new HoloscopeDisplay(scene)

@@ -1,5 +1,7 @@
-import config from './config'
+import Config from './config'
 import AbstractScene from './scenes/AbstractScene'
+
+import * as dat from 'dat.gui'
 
 const viewsParams = [
   {
@@ -36,15 +38,67 @@ class HoloscopeDisplay {
   maxHeight: number
   startTimestamp: number
   lastTimestamp: number
-  config: typeof config
+  config: typeof Config.defaultConfig
+  gui: dat.gui
 
   constructor(scene: AbstractScene) {
     this.scene = scene
-    this.config = Object.assign({}, config)
+    this.config = Object.assign({}, Config.defaultConfig, Config.loadStorage())
   }
 
-  async prepareScene() {
-    await this.scene.prepare()
+  prepareGUI() {
+    this.gui = new dat.GUI()
+
+    const changeHandler = (cb) => () =>
+      Config.writeStorage(this.config, cb.bind(this))
+
+    const squareFolder = this.gui.addFolder('Square')
+    squareFolder
+      .add(this.config, 'squareWidth', 0, 800)
+      .onChange(changeHandler(this.rescale))
+    squareFolder
+      .add(this.config, 'squareHeight', 0, 800)
+      .onChange(changeHandler(this.rescale))
+    squareFolder.open()
+
+    const scaleFolder = this.gui.addFolder('Scale')
+    scaleFolder
+      .add(this.config, 'scaleHeight', 0.5, 2)
+      .onChange(changeHandler(this.rescale))
+    scaleFolder.open()
+
+    const postFolder = this.gui.addFolder('Post-Processing')
+    postFolder
+      .add(this.config, 'brightness', 0.5, 3)
+      .onChange(changeHandler(this.adjustPostProcess))
+    postFolder
+      .add(this.config, 'contrast', 50, 200)
+      .onChange(changeHandler(this.adjustPostProcess))
+    postFolder.open()
+
+    this.gui.hide()
+  }
+
+  prepareViews() {
+    this.views = viewsParams.map((viewParam, viewIndex) => {
+      const isHorizontal = viewIndex % 2 === 0
+
+      const view: View = {
+        id: viewParam.id,
+        isHorizontal,
+        container: document.getElementById(viewParam.id),
+        width: 0,
+        height: 0,
+        canvas: document.createElement('canvas'),
+      }
+      view.container.appendChild(view.canvas)
+
+      view.canvas.style.transform = `rotate(${viewIndex * 90}deg)`
+
+      return view
+    })
+    this.rescale()
+    window.addEventListener('resize', this.rescale.bind(this))
   }
 
   rescale() {
@@ -89,27 +143,6 @@ class HoloscopeDisplay {
     })
   }
 
-  prepareViews() {
-    this.views = viewsParams.map((viewParam, viewIndex) => {
-      const isHorizontal = viewIndex % 2 === 0
-
-      const view: View = {
-        id: viewParam.id,
-        isHorizontal,
-        container: document.getElementById(viewParam.id),
-        width: 0,
-        height: 0,
-        canvas: document.createElement('canvas'),
-      }
-      view.container.appendChild(view.canvas)
-
-      view.canvas.style.transform = `rotate(${viewIndex * 90}deg)`
-
-      return view
-    })
-    this.rescale()
-  }
-
   adjustPostProcess() {
     document.documentElement.style.setProperty(
       '--brightness',
@@ -123,8 +156,9 @@ class HoloscopeDisplay {
 
   async prepare() {
     this.prepareViews()
+    this.prepareGUI()
     this.adjustPostProcess()
-    await this.prepareScene()
+    await this.scene.prepare()
   }
 
   async animate(timestamp: number) {
@@ -134,15 +168,13 @@ class HoloscopeDisplay {
     if (this.lastTimestamp === undefined) {
       this.lastTimestamp = timestamp
     }
-    const elapsedMs = timestamp - this.startTimestamp
+    // const elapsedMs = timestamp - this.startTimestamp
     const deltaMs = timestamp - this.lastTimestamp
     this.lastTimestamp = timestamp
 
     await this.scene.animate(deltaMs)
 
     this.views.forEach((view) => {
-      const ctx = view.canvas.getContext('2d')
-
       const dHeight = this.maxHeight * this.config.scaleHeight
       const offsetBottom =
         (this.maxHeight * Math.max(1 - this.config.scaleHeight, 0)) / 2
@@ -150,6 +182,7 @@ class HoloscopeDisplay {
       const dWidth = dHeight * this.scene.size.aspect
       const dx = (view.width - dWidth) / 2
 
+      const ctx = view.canvas.getContext('2d')
       ctx.drawImage(this.scene.source, dx, dy, dWidth, dHeight)
     })
 
@@ -158,7 +191,6 @@ class HoloscopeDisplay {
 
   async start() {
     requestAnimationFrame(this.animate.bind(this))
-    window.addEventListener('resize', this.rescale.bind(this))
   }
 }
 
