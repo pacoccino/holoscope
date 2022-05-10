@@ -14,6 +14,7 @@ class ThreeScene implements AbstractScene {
   renderer: THREE.Renderer
   objects: Record<string, THREE.Object3D>
   threeScene: THREE.Scene
+  mixer: THREE.AnimationMixer
   modelUrl: string
 
   constructor(modelUrl = defaultModelUrl) {
@@ -39,13 +40,14 @@ class ThreeScene implements AbstractScene {
     this.createScene()
   }
 
-  async animate() {
+  async animate(deltaMS: number) {
     this.objects['cube'].rotation.x += 0.01
     this.objects['cube'].rotation.y += 0.02
 
     this.objects['car'] && (this.objects['car'].rotation.y += 0.01)
     //this.objects['car'].rotation.y = 1.7;
 
+    this.mixer && this.mixer.update(deltaMS / 1000)
     this.renderer.render(this.threeScene, this.camera)
   }
 
@@ -83,6 +85,12 @@ class ThreeScene implements AbstractScene {
           const boxSize = box.getSize(new THREE.Vector3()).length()
           const boxCenter = box.getCenter(new THREE.Vector3())
           this.frameArea(boxSize * 1, boxSize, boxCenter)
+
+          if (gltf.animations && gltf.animations.length > 0) {
+            const animation = gltf.animations[0]
+            this.mixer = new THREE.AnimationMixer(this.objects['car'])
+            this.mixer.clipAction(animation).play()
+          }
         },
         undefined,
         console.error

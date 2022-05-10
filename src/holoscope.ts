@@ -33,6 +33,8 @@ class HoloscopeDisplay {
   views: any[]
   scene: AbstractScene
   aspectRatio: number
+  startTimestamp: number
+  lastTimestamp: number
 
   constructor(scene: AbstractScene) {
     this.scene = scene
@@ -120,13 +122,26 @@ class HoloscopeDisplay {
     await this.prepareScene()
   }
 
-  async animate() {
+  async animate(timestamp: number) {
+    if (this.startTimestamp === undefined) {
+      this.startTimestamp = timestamp
+    }
+    if (this.lastTimestamp === undefined) {
+      this.lastTimestamp = timestamp
+    }
+    const elapsedMs = timestamp - this.startTimestamp
+    const deltaMs = timestamp - this.lastTimestamp
+    this.lastTimestamp = timestamp
+
+    await this.scene.animate(deltaMs)
+
     this.views.forEach((view) => {
       const ctx = view.canvas.getContext('2d')
 
-      //
       const dWidth = view.width * config.scaleWidth
-      const dHeight = view.height * config.scaleHeight
+      const dHeight =
+        (view.height * config.scaleHeight) /
+        (view.isHorizontal ? 1 : this.aspectRatio)
       const dx = (view.width - dWidth) / 2
       const dy = (view.height - dHeight) / 2
 
@@ -134,12 +149,12 @@ class HoloscopeDisplay {
 
       ctx.drawImage(this.scene.source, dx, dy, dWidth, dHeight)
     })
-    await this.scene.animate()
+
     requestAnimationFrame(this.animate.bind(this))
   }
 
   async start() {
-    await this.animate()
+    requestAnimationFrame(this.animate.bind(this))
   }
 }
 

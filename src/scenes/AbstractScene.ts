@@ -1,7 +1,7 @@
 abstract class AbstractScene {
   source: HTMLCanvasElement | HTMLMediaElement
   async prepare() {}
-  async animate() {}
+  async animate(elapsed: number) {}
 }
 
 export default AbstractScene

@@ -7,11 +7,11 @@ import ThreeScene from './scenes/ThreeScene'
 
 async function App() {
   const path = window.location.pathname
-
   let scene: AbstractScene
   switch (path) {
     case '/video':
       scene = new VideoScene()
+      break
     case '/3d':
     default:
       scene = new ThreeScene()
