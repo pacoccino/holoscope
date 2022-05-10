@@ -3,7 +3,7 @@ const config = {
   squareHeight: 200,
   contrast: 140,
   brightness: 1.5,
-  scaleWidth: 0.6,
+  scaleWidth: 0.5,
   scaleHeight: 1,
 }
 
