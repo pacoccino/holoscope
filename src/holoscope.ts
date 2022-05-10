@@ -36,59 +36,42 @@ class HoloscopeDisplay {
   maxHeight: number
   startTimestamp: number
   lastTimestamp: number
+  config: typeof config
 
   constructor(scene: AbstractScene) {
     this.scene = scene
+    this.config = Object.assign({}, config)
   }
 
   async prepareScene() {
     await this.scene.prepare()
   }
 
-  prepareViews() {
+  rescale() {
     const root = document.getElementById('root')
-
-    document.documentElement.style.setProperty(
-      '--brightness',
-      config.brightness.toString()
-    )
-    document.documentElement.style.setProperty(
-      '--contrast',
-      config.contrast + '%'
-    )
 
     const screenWidth = root.clientWidth
     const screenHeight = root.clientHeight
     this.aspectRatio = screenWidth / screenHeight
 
     const center = document.getElementById('center')
-    center.style.width = config.squareWidth + 'px'
-    center.style.height = config.squareHeight + 'px'
+    center.style.width = this.config.squareWidth + 'px'
+    center.style.height = this.config.squareHeight + 'px'
 
-    this.views = viewsParams.slice(0, 4).map((viewParam, viewIndex) => {
-      const isHorizontal = viewIndex % 2 === 0
-
-      const view: View = {
-        id: viewParam.id,
-        isHorizontal,
-        container: document.getElementById(viewParam.id),
-        width: isHorizontal ? screenWidth : screenHeight,
-        height: isHorizontal
-          ? (screenHeight - config.squareHeight) / 2
-          : (screenWidth - config.squareWidth) / 2,
-        canvas: document.createElement('canvas'),
-      }
-      view.container.appendChild(view.canvas)
+    this.views.forEach((view) => {
+      view.width = view.isHorizontal ? screenWidth : screenHeight
+      view.height = view.isHorizontal
+        ? (screenHeight - this.config.squareHeight) / 2
+        : (screenWidth - this.config.squareWidth) / 2
 
       view.canvas.height = view.height
       view.canvas.width = view.width
-      view.canvas.style.transform = `rotate(${viewIndex * 90}deg)`
 
-      if (isHorizontal) {
+      if (view.isHorizontal) {
         view.container.style.width = view.width + 'px'
         view.container.style.height = view.height + 'px'
 
-        const cpw = (config.squareWidth * 100) / 2 / screenWidth
+        const cpw = (this.config.squareWidth * 100) / 2 / screenWidth
         view.canvas.style.clipPath = `polygon(0% 0%, 100% 0%, ${
           50 + cpw
         }% 100%, ${50 - cpw}% 100%, 0% 0%)`
@@ -98,30 +81,49 @@ class HoloscopeDisplay {
         view.container.style.width = view.height + 'px'
         view.container.style.height = view.width + 'px'
 
-        const cph = ((config.squareHeight / screenHeight) * 100) / 2
+        const cph = ((this.config.squareHeight / screenHeight) * 100) / 2
         view.canvas.style.clipPath = `polygon(0% 0%, 100% 0%, ${
           50 + cph
         }% 100%, ${50 - cph}% 100%, 0% 0%)`
       }
-
-      return view
     })
   }
 
-  preparePostProcess() {
+  prepareViews() {
+    this.views = viewsParams.map((viewParam, viewIndex) => {
+      const isHorizontal = viewIndex % 2 === 0
+
+      const view: View = {
+        id: viewParam.id,
+        isHorizontal,
+        container: document.getElementById(viewParam.id),
+        width: 0,
+        height: 0,
+        canvas: document.createElement('canvas'),
+      }
+      view.container.appendChild(view.canvas)
+
+      view.canvas.style.transform = `rotate(${viewIndex * 90}deg)`
+
+      return view
+    })
+    this.rescale()
+  }
+
+  adjustPostProcess() {
     document.documentElement.style.setProperty(
       '--brightness',
-      config.brightness.toString()
+      this.config.brightness.toString()
     )
     document.documentElement.style.setProperty(
       '--contrast',
-      config.contrast + '%'
+      this.config.contrast + '%'
     )
   }
 
   async prepare() {
     this.prepareViews()
-    this.preparePostProcess()
+    this.adjustPostProcess()
     await this.prepareScene()
   }
 
@@ -141,9 +143,9 @@ class HoloscopeDisplay {
     this.views.forEach((view) => {
       const ctx = view.canvas.getContext('2d')
 
-      const dHeight = this.maxHeight * config.scaleHeight
+      const dHeight = this.maxHeight * this.config.scaleHeight
       const offsetBottom =
-        (this.maxHeight * Math.max(1 - config.scaleHeight, 0)) / 2
+        (this.maxHeight * Math.max(1 - this.config.scaleHeight, 0)) / 2
       const dy = view.height - dHeight - offsetBottom
       const dWidth = dHeight * this.scene.size.aspect
       const dx = (view.width - dWidth) / 2
@@ -156,6 +158,7 @@ class HoloscopeDisplay {
 
   async start() {
     requestAnimationFrame(this.animate.bind(this))
+    window.addEventListener('resize', this.rescale.bind(this))
   }
 }
 
