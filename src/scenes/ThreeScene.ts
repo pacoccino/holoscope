@@ -6,7 +6,7 @@ import AbstractScene, { Size } from './AbstractScene'
 // const near = 0.1
 // const far = 100
 
-const defaultModelUrl = 'assets/3d/woodpecker/scene.gltf'
+const defaultModelUrl = 'woodpecker/scene.gltf'
 
 class ThreeScene implements AbstractScene {
   source: HTMLCanvasElement
@@ -20,7 +20,7 @@ class ThreeScene implements AbstractScene {
   modelUrl: string
 
   constructor(modelUrl = defaultModelUrl) {
-    this.modelUrl = modelUrl
+    this.modelUrl = `assets/3d/${modelUrl}`
   }
 
   async prepare() {

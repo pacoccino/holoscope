@@ -1,6 +1,6 @@
 import AbstractScene, { Size } from './AbstractScene'
 
-const defaultVideoUrl = 'assets/videos/ColorOrb_1.mp4'
+const defaultVideoUrl = 'ColorOrb_1.mp4'
 
 class VideoScene implements AbstractScene {
   size: Size
@@ -15,7 +15,7 @@ class VideoScene implements AbstractScene {
   async prepare() {
     return new Promise<void>((resolve) => {
       const video = document.createElement('video')
-      video.src = this.videoUrl
+      video.src = 'assets/videos/' + this.videoUrl
       video.muted = true
       video.loop = true
 
@@ -33,6 +33,7 @@ class VideoScene implements AbstractScene {
 
   async animate() {
     if (this.source.paused) {
+      console.log('play video')
       await this.source.play()
     }
   }

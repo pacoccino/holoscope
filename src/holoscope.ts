@@ -172,6 +172,8 @@ class HoloscopeDisplay {
     const deltaMs = timestamp - this.lastTimestamp
     this.lastTimestamp = timestamp
 
+    // console.log(`${Math.round(deltaMs)} ms`)
+
     await this.scene.animate(deltaMs)
 
     this.views.forEach((view) => {
@@ -189,7 +191,20 @@ class HoloscopeDisplay {
     requestAnimationFrame(this.animate.bind(this))
   }
 
+  listen() {
+    window.addEventListener('keypress', (e) => {
+      if (e.key === 'f') {
+        if (document.fullscreen) {
+          document.exitFullscreen()
+        } else {
+          document.documentElement.requestFullscreen()
+        }
+      }
+    })
+  }
+
   async start() {
+    this.listen()
     requestAnimationFrame(this.animate.bind(this))
   }
 }
